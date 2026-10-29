@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tính Tiền Bao Lô</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mu:#6b7280;--bd:#e3e6ea;--ac:#1f4e78;--up:#15803d;--dn:#c62828;--in:#fffbe6}
+@media (prefers-color-scheme:dark){:root{--bg:#14171b;--card:#1d2127;--tx:#e8eaed;--mu:#9aa1ab;--bd:#2e343c;--ac:#7fb3e6;--up:#4ade80;--dn:#f87171;--in:#2a2716}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:20px;margin:0 0 4px}
+.sub{color:var(--mu);font-size:13px;margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px}
+h2{font-size:15px;margin:0 0 12px;color:var(--ac)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-size:13px;color:var(--mu);margin-bottom:4px}
+input{width:100%;font-size:18px;font-weight:600;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--in);color:var(--tx)}
+input:focus{outline:2px solid var(--ac);outline-offset:0}
+.big input{font-size:26px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chips button{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:999px;padding:5px 12px;font-size:14px;cursor:pointer}
+.chips button.on{background:var(--ac);color:var(--card);border-color:var(--ac)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{border:1px solid var(--bd);border-radius:10px;padding:10px}
+.kpi .l{font-size:12px;color:var(--mu)}
+.kpi .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:8px 6px;border-bottom:1px solid var(--bd);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{font-size:12px;color:var(--mu);font-weight:600}
+.up{color:var(--up);font-weight:700}.dn{color:var(--dn);font-weight:700}
+.note{font-size:13px;color:var(--mu);margin:10px 0 0}
+@media (max-width:560px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Tính tiền: 1 con, bao 3 đài</h1>
+  <p class="sub">Nhập hệ số là ra ngay vốn và tiền ăn. Đơn vị: nghìn đồng (k).</p>
+
+  <div class="card">
+    <h2>Nhập số</h2>
+    <div class="big">
+      <label for="k">Hệ số nhân (số lần đánh)</label>
+      <input id="k" type="number" min="0" step="1" value="1" inputmode="decimal">
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="grid" style="margin-top:14px">
+      <div><label for="cost">Vốn 1 đài (hệ số 1)</label><input id="cost" type="number" min="0" value="14" inputmode="decimal"></div>
+      <div><label for="win">Tiền ăn 1 lần trúng (hệ số 1)</label><input id="win" type="number" min="0" value="75" inputmode="decimal"></div>
+      <div><label for="st">Số đài</label><input id="st" type="number" min="1" value="3" inputmode="numeric"></div>
+      <div><label for="g">Số giải mỗi đài</label><input id="g" type="number" min="1" value="18" inputmode="numeric"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Kết quả</h2>
+    <div class="kpis">
+      <div class="kpi"><div class="l">Vốn 1 đài</div><div class="v" id="o1"></div></div>
+      <div class="kpi"><div class="l">Tổng vốn</div><div class="v" id="o2"></div></div>
+      <div class="kpi"><div class="l">Ăn 1 lần trúng</div><div class="v" id="o3"></div></div>
+      <div class="kpi"><div class="l">Lãi nếu trúng 1</div><div class="v" id="o4"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Lãi / lỗ theo số lần trúng</h2>
+    <table><thead><tr><th>Số lần trúng</th><th>Tổng vốn</th><th>Tiền ăn</th><th>Lãi / Lỗ</th></tr></thead><tbody id="t1"></tbody></table>
+    <p class="note">Con số về ở nhiều đài, hoặc về nhiều giải trong cùng 1 đài, thì ăn nhiều lần.</p>
+  </div>
+
+  <div class="card">
+    <h2>Tra nhanh theo hệ số</h2>
+    <table><thead><tr><th>Hệ số</th><th>Vốn 1 đài</th><th>Tổng vốn</th><th>Ăn 1 lần</th><th>Lãi trúng 1</th></tr></thead><tbody id="t2"></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>Kỳ vọng theo xác suất (tham khảo)</h2>
+    <table><tbody id="t3"></tbody></table>
+    <p class="note">Mỗi giải có 1/100 khả năng về đúng 2 số cuối. Đánh càng lâu, kết quả càng sát con số này.</p>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const fk=(v,d=0)=>(Math.round(v*10**d)/10**d).toLocaleString('vi-VN',{minimumFractionDigits:d,maximumFractionDigits:d})+'k';
+const pl=(v,d=0)=>`<span class="${v>0?'up':v<0?'dn':''}">${v>0?'+':''}${fk(v,d)}</span>`;
+const presets=[1,2,3,5,10,20,50,100];
+$('chips').innerHTML=presets.map(p=>`<button data-k="${p}">x${p}</button>`).join('');
+$('chips').onclick=e=>{const b=e.target.closest('button');if(!b)return;$('k').value=b.dataset.k;calc()};
+function n(id){const v=parseFloat($(id).value);return isFinite(v)?v:0}
+function calc(){
+  const k=n('k'),c=n('cost'),w=n('win'),s=n('st'),g=n('g');
+  const v1=k*c,tv=v1*s,an=k*w;
+  $('o1').textContent=fk(v1);$('o2').textContent=fk(tv);$('o3').textContent=fk(an);$('o4').innerHTML=pl(an-tv);
+  let h='';for(let i=0;i<=6;i++)h+=`<tr><td>${i}</td><td>${fk(tv)}</td><td>${fk(i*an)}</td><td>${pl(i*an-tv)}</td></tr>`;$('t1').innerHTML=h;
+  $('t2').innerHTML=presets.map(p=>`<tr${p===k?' style="background:var(--in)"':''}><td>x${p}</td><td>${fk(p*c)}</td><td>${fk(p*c*s)}</td><td>${fk(p*w)}</td><td>${pl(p*w-p*c*s)}</td></tr>`).join('');
+  const hits=g/100*s,ev=hits*an;
+  $('t3').innerHTML=`<tr><td>Số lần trúng trung bình / kỳ</td><td>${hits.toLocaleString('vi-VN',{maximumFractionDigits:2})}</td></tr>
+  <tr><td>Tiền ăn trung bình / kỳ</td><td>${fk(ev,1)}</td></tr>
+  <tr><td>Lãi / lỗ trung bình / kỳ</td><td>${pl(ev-tv,1)}</td></tr>
+  <tr><td>Tỉ lệ hoàn vốn</td><td>${tv?(ev/tv*100).toLocaleString('vi-VN',{maximumFractionDigits:1})+'%':'–'}</td></tr>`;
+  document.querySelectorAll('#chips button').forEach(b=>b.classList.toggle('on',+b.dataset.k===k));
+}
+document.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+calc();
+</script>
+</body>
+</html>
